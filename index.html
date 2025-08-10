@@ -1,726 +1,784 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Flashcards</title>
-  <link href="https://fonts.cdnfonts.com/css/satoshi" rel="stylesheet">
-  <style>
-    :root {
-      --accent: #304FFE;
-      --bg: #ffffff;
-      --surface: #ffffff;
-      --surface-2: #f6f7fb;
-      --text: #0b0b0c;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --card-border: #e5e7eb;
-      --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
-    }
-    body[data-theme="dark"] {
-      --bg: #0a0a0a;
-      --surface: #0f0f10;
-      --surface-2: #111214;
-      --text: #f4f4f5;
-      --muted: #a1a1aa;
-      --border: #232329;
-      --card-border: #24252b;
-      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
-    }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      font-family: 'Satoshi', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flashcard Maker</title>
+    <link href="https://fonts.cdnfonts.com/css/satoshi" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #304FFE;
+            --bg: #ffffff;
+            --surface: #ffffff;
+            --surface-2: #f6f7fb;
+            --text: #0b0b0c;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --card-border: #e5e7eb;
+            --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 8px 24px rgba(0, 0, 0, .06);
+        }
 
-    /* Header */
-    header {
-      position: sticky; top: 0; z-index: 10;
-      backdrop-filter: blur(10px);
-      background: color-mix(in oklab, var(--surface), transparent 25%);
-      border-bottom: 1px solid var(--border);
-    }
-    .container { max-width: 1000px; margin: 0 auto; padding: 12px 16px; }
-    .row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .pill {
-      width: 8px; height: 28px; border-radius: 6px; background: var(--accent);
-    }
-    .title { font-weight: 700; font-size: 18px; letter-spacing: .2px; }
-    .subtitle { font-size: 12px; color: var(--muted); display: none; }
-    @media (min-width: 640px){ .subtitle{ display: inline; } }
+        body[data-theme="dark"] {
+            --bg: #0a0a0a;
+            --surface: #0f0f10;
+            --surface-2: #111214;
+            --text: #f4f4f5;
+            --muted: #a1a1aa;
+            --border: #232329;
+            --card-border: #24252b;
+            --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+        }
 
-    /* Buttons and selects */
-    .btn {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .btn:hover { background: var(--surface-2); }
-    .btn.primary {
-      border-color: transparent;
-      background: var(--accent);
-      color: #fff;
-    }
-    .btn.primary:hover { filter: brightness(.98); }
-    .btn.danger {
-      border-color: #f3cccc;
-      color: #b91c1c;
-      background: color-mix(in oklab, #b91c1c 6%, transparent);
-    }
-    .btn.danger:hover {
-      background: color-mix(in oklab, #b91c1c 12%, transparent);
-    }
-    .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .seg .btn { border: none; border-radius: 0; }
-    .seg .btn.active { background: var(--accent); color: #fff; }
-    .select {
-      appearance: none;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      cursor: pointer;
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    /* Main */
-    main { max-width: 1000px; margin: 0 auto; padding: 16px; }
-    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 8px 0 12px; }
+        html,
+        body {
+            height: 100%;
+        }
 
-    /* Table editor */
-    .table-wrap {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      background: var(--surface);
-      box-shadow: var(--shadow);
-    }
-    table { width: 100%; border-collapse: collapse; }
-    thead th {
-      text-align: left; font-size: 13px; font-weight: 600; color: var(--muted);
-      background: var(--surface-2);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 12px;
-    }
-    tbody td {
-      border-bottom: 1px solid var(--border);
-      padding: 0;
-    }
-    tbody tr:last-child td { border-bottom: none; }
-    .cell {
-      padding: 10px 12px;
-      min-height: 44px;
-      outline: none;
-      white-space: pre-wrap;
-    }
-    .cell:focus {
-      background: var(--bg);
-      box-shadow: inset 0 0 0 2px var(--accent);
-      border-radius: 6px;
-    }
-    .tips { color: var(--muted); font-size: 12px; margin-top: 10px; }
+        body {
+            font-family: 'Satoshi', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-    /* Card reviewer */
-    .card {
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      background: var(--surface);
-      box-shadow: var(--shadow);
-      padding: 28px;
-      text-align: center;
-      font-size: 24px;
-      line-height: 1.5;
-      cursor: pointer;
-      max-width: 720px;
-      margin: 14px auto;
-      user-select: none;
-    }
-    .card small { display: block; margin-top: 10px; color: var(--muted); font-size: 12px; }
-    .controls { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
-    .progress { text-align: center; color: var(--muted); font-size: 14px; margin-top: 8px; }
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            background: color-mix(in oklab, var(--surface), transparent 25%);
+            border-bottom: 1px solid var(--border);
+        }
 
-    /* Toast */
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: var(--text);
-      color: var(--bg);
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-      box-shadow: var(--shadow);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s ease;
-    }
-    .toast.show { opacity: 1; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 12px 16px;
+        }
 
-    /* Hidden file input */
-    #importFile { display: none; }
-  </style>
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+        }
+
+        .title {
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: .2px;
+        }
+
+        /* Buttons and selects */
+        .btn {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn:hover {
+            background: var(--surface-2);
+        }
+
+        .btn.primary {
+            border-color: transparent;
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn.primary:hover {
+            filter: brightness(.98);
+        }
+
+        .btn.danger {
+            border-color: #f3cccc;
+            color: #b91c1c;
+            background: color-mix(in oklab, #b91c1c 6%, transparent);
+        }
+
+        .btn.danger:hover {
+            background: color-mix(in oklab, #b91c1c 12%, transparent);
+        }
+
+        .seg {
+            display: inline-flex;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .seg .btn {
+            border: none;
+            border-radius: 0;
+        }
+
+        .seg .btn.active {
+            background: color-mix(in oklab, var(--muted)12%, transparent);
+            color: #fff;
+        }
+
+        /* Main */
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 8px 0 12px;
+        }
+
+        /* Table editor */
+        .table-wrap {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        col.col-term {
+            width: 30%;
+        }
+
+        col.col-def {
+            width: 70%;
+        }
+
+        thead th {
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 12px;
+        }
+
+        tbody td {
+            border-bottom: 1px solid var(--border);
+            padding: 0;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .cell {
+            padding: 10px 12px;
+            min-height: 44px;
+            outline: none;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .cell:focus {
+            background: var(--bg);
+            box-shadow: inset 0 0 0 2px var(--accent);
+            border-radius: 6px;
+        }
+
+        .tips {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        /* Card reviewer */
+        .card {
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            padding: 28px;
+            text-align: center;
+            font-size: 24px;
+            line-height: 1.5;
+            cursor: pointer;
+            max-width: 720px;
+            margin: 24px auto;
+            user-select: none;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card small {
+            display: block;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .progress {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 24px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: var(--bg);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Hidden file input */
+        #importFile {
+            display: none;
+        }
+
+        .lucide {
+            width: 16px;
+            height: 16px;
+        }
+    </style>
 </head>
+
 <body>
-  <header>
-    <div class="container">
-      <div class="row">
-        <div class="brand">
-          <div class="pill"></div>
-          <div>
-            <div class="title">Flashcards</div>
-            <div class="subtitle">Fast, minimal, keyboard-first</div>
-          </div>
+    <header>
+        <div class="container">
+            <div class="row">
+                <div class="title">Flashcard Maker</div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="btn" id="btnEdit" title="Edit (E)"><i
+                            data-lucide="table"></i><span>Edit</span></button>
+                    <button class="btn" id="btnReview" title="Review (R)"><i
+                            data-lucide="play"></i><span>Review</span></button>
+                    <button class="btn" id="btnTheme" title="Toggle light/dark"><i
+                            data-lucide="moon"></i><span>Dark</span></button>
+                </div>
+            </div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <button class="btn" id="btnEdit" title="Edit (E)">Edit</button>
-          <button class="btn" id="btnReview" title="Review (R)">Review</button>
-          <button class="btn" id="btnTheme" title="Toggle light/dark">Dark</button>
-        </div>
-      </div>
-    </div>
-  </header>
+    </header>
 
-  <main>
-    <!-- Edit view -->
-    <section id="edit-view">
-      <div class="toolbar">
-        <button class="btn primary" id="btnExport" title="Export CSV">Export CSV</button>
-        <label for="importFile">
-          <button class="btn" id="btnImport" title="Import CSV">Import CSV</button>
-        </label>
-        <input type="file" id="importFile" accept=".csv,text/csv"/>
-        <div style="flex:1"></div>
-        <button class="btn danger" id="btnClear" title="Clear all cards">Clear all</button>
-      </div>
+    <main>
+        <!-- Edit view -->
+        <section id="edit-view">
+            <div class="toolbar">
+                <button class="btn primary" id="btnExport" title="Export CSV"><i
+                        data-lucide="download"></i><span>Export</span></button>
+                <label for="importFile">
+                    <button class="btn" id="btnImport" title="Import CSV"><i
+                            data-lucide="upload"></i><span>Import</span></button>
+                </label>
+                <input type="file" id="importFile" accept=".csv,text/csv" />
+                <div style="flex:1"></div>
+                <button class="btn danger" id="btnClear" title="Clear all cards"><i
+                        data-lucide="trash-2"></i><span>Clear</span></button>
+            </div>
 
-      <div class="table-wrap">
-        <table id="card-table" aria-label="Flashcards table editor">
-          <thead>
-            <tr>
-              <th>Term</th>
-              <th>Definition</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-      <div class="tips">
-        Tips: Enter moves to next cell or adds a row. Tab moves across. Ctrl or Cmd + S shows saved. Ctrl or Cmd + Backspace clears the current cell. Delete on an empty row removes it. Trailing blank row is automatic.
-      </div>
-    </section>
+            <div class="table-wrap">
+                <table id="card-table" aria-label="Flashcards table editor">
+                    <colgroup>
+                        <col class="col-term" />
+                        <col class="col-def" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Term</th>
+                            <th>Definition</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+            <div class="tips">
+                Tips: Enter moves to next cell or adds a row. Tab moves across. Ctrl or Cmd + S shows saved. Ctrl or Cmd
+                + Backspace clears the current cell. Delete on an empty row removes it. Trailing blank row is automatic.
+            </div>
+        </section>
 
-    <!-- Review view -->
-    <section id="review-view" style="display:none;">
-      <div class="toolbar" role="group" aria-label="Review settings">
-        <div class="seg" aria-label="Order">
-          <button class="btn" id="btnChrono" title="Chronological (1)">Chrono</button>
-          <button class="btn" id="btnRandom" title="Random (2 or S)">Random</button>
-        </div>
-        <div class="seg" aria-label="Direction">
-          <button class="btn" id="btnTermFirst" title="Term → Definition (T)">Term → Def</button>
-          <button class="btn" id="btnDefFirst" title="Definition → Term (D)">Def → Term</button>
-        </div>
-        <div style="flex:1"></div>
-        <div class="tips">Space or F flips. J/K or arrows move. L marks learned. Esc exits.</div>
-      </div>
+        <!-- Review view -->
+        <section id="review-view" style="display:none;">
+            <div class="toolbar" role="group" aria-label="Review settings">
+                <div class="seg" aria-label="Order">
+                    <button class="btn" id="btnChrono" title="Chronological (1)"><i
+                            data-lucide="list"></i><span>Chrono</span></button>
+                    <button class="btn" id="btnRandom" title="Random (2 or S)"><i
+                            data-lucide="shuffle"></i><span>Random</span></button>
+                </div>
+                <div class="seg" aria-label="Direction">
+                    <button class="btn" id="btnTermFirst" title="Term → Definition (T)"><i
+                            data-lucide="arrow-right"></i><span>Term → Def</span></button>
+                    <button class="btn" id="btnDefFirst" title="Definition → Term (D)"><i
+                            data-lucide="arrow-left"></i><span>Def → Term</span></button>
+                </div>
+                <div style="flex:1"></div>
+                <div class="tips" style="margin: 0;">Space or F flips. J/K or arrows move. L marks learned. Esc exits.
+                </div>
+            </div>
 
-      <div class="card" id="card" tabindex="0" aria-live="polite">
-        <div id="cardText">(empty)</div>
-        <small>Click or press Space to flip</small>
-      </div>
+            <div class="card" id="card" tabindex="0" aria-live="polite">
+                <div id="cardText">(empty)</div>
+                <small>Click or press Space to flip</small>
+            </div>
 
-      <div class="controls">
-        <button class="btn" id="btnPrev" title="Previous (K or ←)">Previous</button>
-        <button class="btn primary" id="btnFlip" title="Flip (Space or F)">Flip</button>
-        <button class="btn" id="btnNext" title="Next (J or →)">Next</button>
-        <button class="btn" id="btnLearned" title="Mark learned (L)">Mark learned</button>
-      </div>
-      <div class="progress" id="progress"></div>
-    </section>
-  </main>
+            <div class="controls">
+                <button class="btn" id="btnPrev" title="Previous (K or ←)"><i
+                        data-lucide="chevron-left"></i><span>Previous</span></button>
+                <button class="btn primary" id="btnFlip" title="Flip (Space or F)"><i
+                        data-lucide="flip-horizontal-2"></i><span>Flip</span></button>
+                <button class="btn" id="btnNext" title="Next (J or →)"><i
+                        data-lucide="chevron-right"></i><span>Next</span></button>
+                <button class="btn" id="btnLearned" title="Mark learned (L)"><i
+                        data-lucide="check-circle-2"></i><span>Learned</span></button>
+            </div>
+            <div class="progress" id="progress"></div>
+        </section>
+    </main>
 
-  <div class="toast" id="toast"></div>
+    <div class="toast" id="toast"></div>
 
-  <script>
-    // Storage keys
-    const SK = "fc-cards-v1";
-    const PK = "fc-prefs-v1";
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    // State
-    let cards = [];
-    let view = "edit"; // "edit" | "review"
-    let order = "chronological"; // "chronological" | "random"
-    let direction = "term-first"; // "term-first" | "def-first"
-    let dark = false;
+    <script>
+        // Storage keys
+        const SK = "fc-cards-v1";
+        const PK = "fc-prefs-v1";
 
-    // Review state
-    let sessionSeed = Date.now();
-    let orderList = [];
-    let learned = new Set();
-    let idx = 0;
-    let flipped = false;
+        // State
+        let cards = [];
+        let view = "edit"; // "edit" | "review"
+        let order = "chronological"; // "chronological" | "random"
+        let direction = "term-first"; // "term-first" | "def-first"
+        let dark = false;
 
-    // Elements
-    const editView = document.getElementById("edit-view");
-    const reviewView = document.getElementById("review-view");
-    const tbody = document.getElementById("tbody");
-    const toastEl = document.getElementById("toast");
-    const cardEl = document.getElementById("card");
-    const cardText = document.getElementById("cardText");
-    const progress = document.getElementById("progress");
+        // Review state
+        let sessionSeed = Date.now();
+        let orderList = [];
+        let learned = new Set();
+        let idx = 0;
+        let flipped = false;
 
-    // Buttons
-    const btnEdit = document.getElementById("btnEdit");
-    const btnReview = document.getElementById("btnReview");
-    const btnTheme = document.getElementById("btnTheme");
-    const btnExport = document.getElementById("btnExport");
-    const btnImport = document.getElementById("btnImport");
-    const inputImport = document.getElementById("importFile");
-    const btnClear = document.getElementById("btnClear");
+        // Elements
+        const editView = document.getElementById("edit-view");
+        const reviewView = document.getElementById("review-view");
+        const tbody = document.getElementById("tbody");
+        const toastEl = document.getElementById("toast");
+        const cardEl = document.getElementById("card");
+        const cardText = document.getElementById("cardText");
+        const progress = document.getElementById("progress");
 
-    const btnChrono = document.getElementById("btnChrono");
-    const btnRandom = document.getElementById("btnRandom");
-    const btnTermFirst = document.getElementById("btnTermFirst");
-    const btnDefFirst = document.getElementById("btnDefFirst");
+        // Buttons
+        const btnEdit = document.getElementById("btnEdit");
+        const btnReview = document.getElementById("btnReview");
+        const btnTheme = document.getElementById("btnTheme");
+        const btnExport = document.getElementById("btnExport");
+        const btnImport = document.getElementById("btnImport");
+        const inputImport = document.getElementById("importFile");
+        const btnClear = document.getElementById("btnClear");
 
-    const btnPrev = document.getElementById("btnPrev");
-    const btnFlip = document.getElementById("btnFlip");
-    const btnNext = document.getElementById("btnNext");
-    const btnLearned = document.getElementById("btnLearned");
+        const btnChrono = document.getElementById("btnChrono");
+        const btnRandom = document.getElementById("btnRandom");
+        const btnTermFirst = document.getElementById("btnTermFirst");
+        const btnDefFirst = document.getElementById("btnDefFirst");
 
-    // Init
-    loadPrefs();
-    loadCards();
-    setTheme(dark ? "dark" : "light");
-    renderView();
+        const btnPrev = document.getElementById("btnPrev");
+        const btnFlip = document.getElementById("btnFlip");
+        const btnNext = document.getElementById("btnNext");
+        const btnLearned = document.getElementById("btnLearned");
 
-    // Event wiring
-    btnEdit.onclick = () => showEdit();
-    btnReview.onclick = () => startReview();
-    btnTheme.onclick = () => toggleTheme();
+        // Init
+        loadPrefs();
+        loadCards();
+        setTheme(dark ? "dark" : "light");
+        renderView();
 
-    btnExport.onclick = () => exportCSV();
-    btnImport.onclick = () => inputImport.click();
-    inputImport.onchange = (e) => importCSV(e);
-    btnClear.onclick = () => clearAll();
+        // Event wiring
+        btnEdit.onclick = () => showEdit();
+        btnReview.onclick = () => startReview();
+        btnTheme.onclick = () => toggleTheme();
 
-    btnChrono.onclick = () => setOrder("chronological");
-    btnRandom.onclick = () => setOrder("random");
-    btnTermFirst.onclick = () => setDirection("term-first");
-    btnDefFirst.onclick = () => setDirection("def-first");
+        btnExport.onclick = () => exportCSV();
+        btnImport.onclick = () => inputImport.click();
+        inputImport.onchange = (e) => importCSV(e);
+        btnClear.onclick = () => clearAll();
 
-    btnPrev.onclick = () => prevCard();
-    btnFlip.onclick = () => flipCard();
-    btnNext.onclick = () => nextCard();
-    btnLearned.onclick = () => markLearned();
+        btnChrono.onclick = () => setOrder("chronological");
+        btnRandom.onclick = () => setOrder("random");
+        btnTermFirst.onclick = () => setDirection("term-first");
+        btnDefFirst.onclick = () => setDirection("def-first");
 
-    cardEl.onclick = () => flipCard();
+        btnPrev.onclick = () => prevCard();
+        btnFlip.onclick = () => flipCard();
+        btnNext.onclick = () => nextCard();
+        btnLearned.onclick = () => markLearned();
 
-    // Delegated table events
-    tbody.addEventListener("input", onTableInput);
-    tbody.addEventListener("keydown", onTableKeydown);
+        cardEl.onclick = () => flipCard();
 
-    // Global keys
-    document.addEventListener("keydown", onGlobalKey);
+        // Delegated table events
+        tbody.addEventListener("input", onTableInput);
+        tbody.addEventListener("keydown", onTableKeydown);
 
-    // ---------- Persistence ----------
-    function loadCards() {
-      try {
-        cards = JSON.parse(localStorage.getItem(SK) || "[]");
-      } catch { cards = []; }
-      renderTable();
-    }
-    let saveTimer = null;
-    function scheduleSave() {
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => {
-        localStorage.setItem(SK, JSON.stringify(cards));
-      }, 200);
-    }
-    function loadPrefs() {
-      try {
-        const p = JSON.parse(localStorage.getItem(PK) || "{}");
-        if (p.order) order = p.order;
-        if (p.direction) direction = p.direction;
-        if (typeof p.dark === "boolean") dark = p.dark;
-      } catch {}
-    }
-    function savePrefs() {
-      localStorage.setItem(PK, JSON.stringify({ order, direction, dark }));
-    }
+        // Global keys
+        document.addEventListener("keydown", onGlobalKey);
 
-    // ---------- View control ----------
-    function renderView() {
-      if (view === "edit") {
-        editView.style.display = "";
-        reviewView.style.display = "none";
-        renderTable();
-      } else {
-        editView.style.display = "none";
-        reviewView.style.display = "";
-        renderReviewControls();
-        renderCard();
-      }
-      // Header button states
-      btnEdit.classList.toggle("primary", view === "edit");
-      btnReview.classList.toggle("primary", view === "review");
-      btnTheme.textContent = document.body.dataset.theme === "dark" ? "Light" : "Dark";
-    }
-    function showEdit() {
-      view = "edit";
-      renderView();
-    }
-    function startReview() {
-      const nonEmpty = cards.filter(c => (c.term?.trim() || c.def?.trim()));
-      if (nonEmpty.length === 0) { toast("No cards yet"); return; }
-      learned.clear();
-      sessionSeed = Date.now();
-      idx = 0;
-      flipped = false;
-      view = "review";
-      buildOrderList();
-      renderView();
-    }
-
-    // ---------- Table editor ----------
-    function renderTable() {
-      tbody.innerHTML = "";
-      // Render existing non-empty rows
-      for (const c of cards) appendRow(c.term, c.def);
-      // Always a trailing blank row
-      appendRow("", "");
-    }
-    function appendRow(term, def) {
-      const tr = document.createElement("tr");
-      const tdTerm = document.createElement("td");
-      const tdDef = document.createElement("td");
-      tdTerm.className = "cell";
-      tdDef.className = "cell";
-      tdTerm.contentEditable = "true";
-      tdDef.contentEditable = "true";
-      tdTerm.textContent = term;
-      tdDef.textContent = def;
-      tr.appendChild(tdTerm);
-      tr.appendChild(tdDef);
-      tbody.appendChild(tr);
-    }
-    function onTableInput() {
-      // Rebuild cards from DOM
-      const rows = [...tbody.querySelectorAll("tr")];
-      const next = [];
-      for (const r of rows) {
-        const term = r.children[0].textContent.trim();
-        const def = r.children[1].textContent.trim();
-        if (term || def) next.push({ term, def });
-      }
-      cards = next;
-      // Ensure trailing blank row
-      const last = rows[rows.length - 1];
-      const hasContent = !!(last?.children[0].textContent.trim() || last?.children[1].textContent.trim());
-      if (hasContent) appendRow("", "");
-      scheduleSave();
-    }
-    function onTableKeydown(e) {
-      const isCell = e.target && e.target.classList && e.target.classList.contains("cell");
-      if (!isCell) return;
-
-      const td = e.target;
-      const tr = td.parentElement;
-      const rowIndex = [...tbody.children].indexOf(tr);
-      const colIndex = [...tr.children].indexOf(td);
-
-      // Enter creates next cell/row
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        if (colIndex === 0) {
-          // move to definition in same row
-          tr.children[1].focus();
-          placeCaretEnd(tr.children[1]);
-        } else {
-          // create or focus next row term
-          const nextRow = tbody.children[rowIndex + 1];
-          if (!nextRow) appendRow("", "");
-          const targetRow = tbody.children[rowIndex + 1];
-          const targetCell = targetRow.children[0];
-          targetCell.focus();
-          placeCaretEnd(targetCell);
+        // ---------- Persistence ----------
+        function loadCards() {
+            try { cards = JSON.parse(localStorage.getItem(SK) || "[]"); } catch { cards = []; }
+            renderTable();
         }
-        return;
-      }
-
-      // Ctrl/Cmd + Backspace clears current cell
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "backspace") {
-        e.preventDefault();
-        td.textContent = "";
-        onTableInput();
-        return;
-      }
-
-      // Delete on empty row removes it
-      if (e.key === "Delete") {
-        const rowEmpty =
-          !tr.children[0].textContent.trim() &&
-          !tr.children[1].textContent.trim();
-        // Do not remove if it is the only row or last trailing single row
-        if (rowEmpty && tbody.children.length > 1) {
-          e.preventDefault();
-          tr.remove();
-          onTableInput();
-          // focus next available cell
-          const newRow = tbody.children[Math.min(rowIndex, tbody.children.length - 1)];
-          if (newRow) {
-            const cell = newRow.children[Math.min(colIndex, 1)];
-            cell.focus();
-            placeCaretEnd(cell);
-          }
+        let saveTimer = null;
+        function scheduleSave() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => { localStorage.setItem(SK, JSON.stringify(cards)); }, 200);
         }
-      }
-    }
-
-    // ---------- Review ----------
-    function renderReviewControls() {
-      btnChrono.classList.toggle("active", order === "chronological");
-      btnRandom.classList.toggle("active", order === "random");
-      btnTermFirst.classList.toggle("active", direction === "term-first");
-      btnDefFirst.classList.toggle("active", direction === "def-first");
-    }
-    function buildOrderList() {
-      const nonEmpty = cards;
-      let indices = nonEmpty.map((_, i) => i);
-      if (order === "random") {
-        const rng = mulberry32(sessionSeed);
-        for (let i = indices.length - 1; i > 0; i--) {
-          const j = Math.floor(rng() * (i + 1));
-          [indices[i], indices[j]] = [indices[j], indices[i]];
+        function loadPrefs() {
+            try {
+                const p = JSON.parse(localStorage.getItem(PK) || "{}");
+                if (p.order) order = p.order;
+                if (p.direction) direction = p.direction;
+                if (typeof p.dark === "boolean") dark = p.dark;
+            } catch { }
         }
-      }
-      orderList = indices.filter(i => !learned.has(i));
-      if (idx >= orderList.length) idx = 0;
-    }
-    function renderCard() {
-      if (orderList.length === 0) {
-        cardText.textContent = "All done. You marked everything as learned.";
-        progress.textContent = "";
-        return;
-      }
-      const globalIndex = orderList[idx];
-      const c = cards[globalIndex];
-      const front = direction === "term-first" ? c.term : c.def;
-      const back  = direction === "term-first" ? c.def : c.term;
-      cardText.textContent = flipped ? (back || "(empty)") : (front || "(empty)");
-      progress.textContent = `${Math.min(idx + 1, orderList.length)} of ${orderList.length}`;
-    }
-    function nextCard() {
-      if (orderList.length === 0) return;
-      flipped = false;
-      idx = (idx + 1) % orderList.length;
-      renderCard();
-    }
-    function prevCard() {
-      if (orderList.length === 0) return;
-      flipped = false;
-      idx = (idx - 1 + orderList.length) % orderList.length;
-      renderCard();
-    }
-    function flipCard() {
-      if (orderList.length === 0) return;
-      flipped = !flipped;
-      renderCard();
-    }
-    function setOrder(newOrder) {
-      order = newOrder;
-      savePrefs();
-      if (view === "review") {
-        sessionSeed = Date.now();
-        buildOrderList();
-        flipped = false;
-        idx = 0;
-        renderReviewControls();
-        renderCard();
-        toast("Order: " + (order === "random" ? "Random" : "Chronological"));
-      }
-    }
-    function setDirection(newDir) {
-      direction = newDir;
-      savePrefs();
-      if (view === "review") {
-        flipped = false;
-        renderReviewControls();
-        renderCard();
-        toast(direction === "term-first" ? "Term → Definition" : "Definition → Term");
-      }
-    }
-    function markLearned() {
-      if (orderList.length === 0) return;
-      const globalIndex = orderList[idx];
-      learned.add(globalIndex);
-      buildOrderList();
-      flipped = false;
-      idx = 0;
-      renderCard();
-    }
-
-    // ---------- Theme ----------
-    function setTheme(mode) {
-      document.body.dataset.theme = mode === "dark" ? "dark" : "light";
-      dark = mode === "dark";
-      savePrefs();
-      btnTheme.textContent = dark ? "Light" : "Dark";
-    }
-    function toggleTheme() {
-      setTheme(dark ? "light" : "dark");
-    }
-
-    // ---------- CSV ----------
-    function exportCSV() {
-      const rows = cards.filter(c => c.term.trim() || c.def.trim());
-      const csv = ["Term,Definition"].concat(rows.map(({term, def}) =>
-        [term, def].map(csvEscape).join(",")
-      )).join("\n");
-      const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "flashcards.csv";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast("Exported CSV");
-    }
-    function csvEscape(v="") {
-      if (/[",\n]/.test(v)) return '"' + v.replace(/"/g, '""') + '"';
-      return v;
-    }
-    function importCSV(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const text = String(reader.result || "");
-        const parsed = parseCSV(text);
-        if (parsed.length === 0) { toast("Nothing to import"); return; }
-        cards = parsed;
-        renderTable();
-        scheduleSave();
-        toast("Imported");
-        e.target.value = "";
-      };
-      reader.readAsText(file);
-    }
-    function parseCSV(text) {
-      const lines = text.replace(/\r/g, "").split("\n").filter(l => l.length > 0);
-      if (lines.length === 0) return [];
-      const start = lines[0].toLowerCase().startsWith("term,definition") ? 1 : 0;
-      const out = [];
-      for (let i = start; i < lines.length; i++) {
-        const fields = splitCSVLine(lines[i]);
-        const term = fields[0] || "";
-        const def = fields[1] || "";
-        if (term.trim() || def.trim()) out.push({ term, def });
-      }
-      return out;
-    }
-    function splitCSVLine(line) {
-      const res = [];
-      let cur = "";
-      let inQ = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (inQ) {
-          if (ch === '"') {
-            if (line[i + 1] === '"') { cur += '"'; i++; }
-            else { inQ = false; }
-          } else cur += ch;
-        } else {
-          if (ch === ",") { res.push(cur); cur = ""; }
-          else if (ch === '"') { inQ = true; }
-          else cur += ch;
+        function savePrefs() {
+            localStorage.setItem(PK, JSON.stringify({ order, direction, dark }));
         }
-      }
-      res.push(cur);
-      return res;
-    }
 
-    // ---------- Global shortcuts ----------
-    function onGlobalKey(e) {
-      const activeTag = document.activeElement && document.activeElement.tagName;
-      const isEditingCell = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("cell");
-
-      // Save shortcut global
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        localStorage.setItem(SK, JSON.stringify(cards));
-        toast("Saved");
-        return;
-      }
-
-      // Edit view shortcuts that should not fire when typing in cells
-      if (view === "edit") {
-        // Mode switches always ok
-        if (!e.metaKey && !e.ctrlKey) {
-          if (e.key.toLowerCase() === "r") { startReview(); e.preventDefault(); return; }
-          if (e.key.toLowerCase() === "e") { showEdit(); e.preventDefault(); return; }
+        // ---------- View control ----------
+        function renderView() {
+            if (view === "edit") {
+                editView.style.display = "";
+                reviewView.style.display = "none";
+                renderTable();
+            } else {
+                editView.style.display = "none";
+                reviewView.style.display = "";
+                renderReviewControls();
+                renderCard();
+            }
+            // Header button states
+            btnEdit.classList.toggle("primary", view === "edit");
+            btnReview.classList.toggle("primary", view === "review");
+            updateThemeButton();
+            refreshIcons();
         }
-        // Let contenteditable handle the rest
-        return;
-      }
+        function showEdit() { view = "edit"; renderView(); }
+        function startReview() {
+            const nonEmpty = cards.filter(c => (c.term?.trim() || c.def?.trim()));
+            if (nonEmpty.length === 0) { toast("No cards yet"); return; }
+            learned.clear();
+            sessionSeed = Date.now();
+            idx = 0;
+            flipped = false;
+            view = "review";
+            buildOrderList();
+            renderView();
+        }
 
-      // Review view shortcuts
-      if (view === "review") {
-        if (e.key === "Escape") { showEdit(); return; }
-        const k = e.key.toLowerCase();
-        if (k === " " || k === "f") { e.preventDefault(); flipCard(); return; }
-        if (k === "j" || e.key === "ArrowRight") { e.preventDefault(); nextCard(); return; }
-        if (k === "k" || e.key === "ArrowLeft") { e.preventDefault(); prevCard(); return; }
-        if (k === "1") { setOrder("chronological"); return; }
-        if (k === "2" || k === "s") { setOrder(order === "random" ? "chronological" : "random"); return; }
-        if (k === "t") { setDirection("term-first"); return; }
-        if (k === "d") { setDirection("def-first"); return; }
-        if (k === "l") { e.preventDefault(); markLearned(); return; }
-        if (k === "e") { showEdit(); return; }
-        if (k === "r") { startReview(); return; }
-      }
-    }
+        // ---------- Table editor ----------
+        function renderTable() {
+            tbody.innerHTML = "";
+            for (const c of cards) appendRow(c.term, c.def);
+            appendRow("", "");
+            refreshIcons();
+        }
+        function appendRow(term, def) {
+            const tr = document.createElement("tr");
+            const tdTerm = document.createElement("td");
+            const tdDef = document.createElement("td");
+            tdTerm.className = "cell";
+            tdDef.className = "cell";
+            tdTerm.contentEditable = "true";
+            tdDef.contentEditable = "true";
+            tdTerm.textContent = term;
+            tdDef.textContent = def;
+            tr.appendChild(tdTerm);
+            tr.appendChild(tdDef);
+            tbody.appendChild(tr);
+        }
+        function clearAll() {
+            if (!confirm('Clear all cards?')) return;
+            cards = [];
+            learned.clear();
+            orderList = [];
+            idx = 0;
+            flipped = false;
+            localStorage.setItem(SK, JSON.stringify(cards)); // save empty
+            renderTable();                                    // rebuild with blank row
+            if (view === 'review') showEdit();               // bounce back to Edit if needed
+            toast('Cleared');
+        }
+        function onTableInput() {
+            const rows = [...tbody.querySelectorAll("tr")];
+            const next = [];
+            for (const r of rows) {
+                const term = r.children[0].textContent.trim();
+                const def = r.children[1].textContent.trim();
+                if (term || def) next.push({ term, def });
+            }
+            cards = next;
+            const last = rows[rows.length - 1];
+            const hasContent = !!(last?.children[0].textContent.trim() || last?.children[1].textContent.trim());
+            if (hasContent) appendRow("", "");
+            scheduleSave();
+        }
+        function onTableKeydown(e) {
+            const isCell = e.target && e.target.classList && e.target.classList.contains("cell");
+            if (!isCell) return;
 
-    // ---------- Helpers ----------
-    function toast(msg) {
-      toastEl.textContent = msg;
-      toastEl.classList.add("show");
-      clearTimeout(toastEl._t);
-      toastEl._t = setTimeout(() => toastEl.classList.remove("show"), 1200);
-    }
-    function placeCaretEnd(el) {
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-    function mulberry32(a) {
-      return function() {
-        let t = a += 0x6D2B79F5;
-        t = Math.imul(t ^ t >>> 15, t | 1);
-        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
-      }
-    }
+            const td = e.target;
+            const tr = td.parentElement;
+            const rowIndex = [...tbody.children].indexOf(tr);
+            const colIndex = [...tr.children].indexOf(td);
 
-    // Expose for buttons needing file input trigger
-    document.getElementById("btnImport").addEventListener("click", () => inputImport.click());
-  </script>
+            // Enter moves across/adds row
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (colIndex === 0) {
+                    tr.children[1].focus();
+                    placeCaretEnd(tr.children[1]);
+                } else {
+                    const nextRow = tbody.children[rowIndex + 1];
+                    if (!nextRow) appendRow("", "");
+                    const targetRow = tbody.children[rowIndex + 1];
+                    const targetCell = targetRow.children[0];
+                    targetCell.focus();
+                    placeCaretEnd(targetCell);
+                }
+                return;
+            }
+
+            // Ctrl/Cmd + Backspace clears current cell
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "backspace") {
+                e.preventDefault();
+                td.textContent = "";
+                onTableInput();
+                return;
+            }
+
+            // Delete on empty row removes it
+            if (e.key === "Delete") {
+                const rowEmpty = !tr.children[0].textContent.trim() && !tr.children[1].textContent.trim();
+                if (rowEmpty && tbody.children.length > 1) {
+                    e.preventDefault();
+                    tr.remove();
+                    onTableInput();
+                    const newRow = tbody.children[Math.min(rowIndex, tbody.children.length - 1)];
+                    if (newRow) {
+                        const cell = newRow.children[Math.min(colIndex, 1)];
+                        cell.focus();
+                        placeCaretEnd(cell);
+                    }
+                }
+            }
+        }
+
+        // ---------- Review ----------
+        function renderReviewControls() {
+            btnChrono.classList.toggle("active", order === "chronological");
+            btnRandom.classList.toggle("active", order === "random");
+            btnTermFirst.classList.toggle("active", direction === "term-first");
+            btnDefFirst.classList.toggle("active", direction === "def-first");
+            refreshIcons();
+        }
+        function buildOrderList() {
+            let indices = cards.map((_, i) => i);
+            if (order === "random") {
+                const rng = mulberry32(sessionSeed);
+                for (let i = indices.length - 1; i > 0; i--) {
+                    const j = Math.floor(rng() * (i + 1));
+                    [indices[i], indices[j]] = [indices[j], indices[i]];
+                }
+            }
+            orderList = indices.filter(i => !learned.has(i));
+            if (idx >= orderList.length) idx = 0;
+        }
+        function renderCard() {
+            if (orderList.length === 0) {
+                cardText.textContent = "All done. You marked everything as learned.";
+                progress.textContent = "";
+                return;
+            }
+            const globalIndex = orderList[idx];
+            const c = cards[globalIndex];
+            const front = direction === "term-first" ? c.term : c.def;
+            const back = direction === "term-first" ? c.def : c.term;
+            cardText.textContent = flipped ? (back || "(empty)") : (front || "(empty)");
+            progress.textContent = `${Math.min(idx + 1, orderList.length)} of ${orderList.length}`;
+        }
+        function nextCard() { if (orderList.length === 0) return; flipped = false; idx = (idx + 1) % orderList.length; renderCard(); }
+        function prevCard() { if (orderList.length === 0) return; flipped = false; idx = (idx - 1 + orderList.length) % orderList.length; renderCard(); }
+        function flipCard() { if (orderList.length === 0) return; flipped = !flipped; renderCard(); }
+        function setOrder(newOrder) {
+            order = newOrder; savePrefs();
+            if (view === "review") { sessionSeed = Date.now(); buildOrderList(); flipped = false; idx = 0; renderReviewControls(); renderCard(); toast("Order: " + (order === "random" ? "Random" : "Chronological")); }
+        }
+        function setDirection(newDir) {
+            direction = newDir; savePrefs();
+            if (view === "review") { flipped = false; renderReviewControls(); renderCard(); toast(direction === "term-first" ? "Term → Definition" : "Definition → Term"); }
+        }
+        function markLearned() { if (orderList.length === 0) return; const globalIndex = orderList[idx]; learned.add(globalIndex); buildOrderList(); flipped = false; idx = 0; renderCard(); }
+
+        // ---------- Theme ----------
+        function setTheme(mode) {
+            document.body.dataset.theme = mode === "dark" ? "dark" : "light";
+            dark = mode === "dark";
+            savePrefs();
+            updateThemeButton();
+            refreshIcons();
+        }
+        function toggleTheme() { setTheme(dark ? "light" : "dark"); }
+        function updateThemeButton() {
+            btnTheme.innerHTML = dark
+                ? '<i data-lucide="sun"></i><span>Light</span>'
+                : '<i data-lucide="moon"></i><span>Dark</span>';
+        }
+
+        // ---------- CSV ----------
+        function exportCSV() {
+            const rows = cards.filter(c => c.term.trim() || c.def.trim());
+            const csv = ["Term,Definition"].concat(rows.map(({ term, def }) => [term, def].map(csvEscape).join(","))).join("\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url; a.download = "flashcards.csv";
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast("Exported CSV");
+        }
+        function csvEscape(v = "") { return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+        function importCSV(e) {
+            const file = e.target.files && e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                const text = String(reader.result || "");
+                const parsed = parseCSV(text);
+                if (parsed.length === 0) { toast("Nothing to import"); return; }
+                cards = parsed; renderTable(); scheduleSave(); toast("Imported"); e.target.value = "";
+            };
+            reader.readAsText(file);
+        }
+        function parseCSV(text) {
+            const lines = text.replace(/\r/g, "").split("\n").filter(l => l.length > 0);
+            if (lines.length === 0) return [];
+            const start = lines[0].toLowerCase().startsWith("term,definition") ? 1 : 0;
+            const out = [];
+            for (let i = start; i < lines.length; i++) {
+                const fields = splitCSVLine(lines[i]);
+                const term = fields[0] || ""; const def = fields[1] || "";
+                if (term.trim() || def.trim()) out.push({ term, def });
+            }
+            return out;
+        }
+        function splitCSVLine(line) {
+            const res = []; let cur = ""; let inQ = false;
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (inQ) { if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else { inQ = false; } } else cur += ch; }
+                else { if (ch === ",") { res.push(cur); cur = ""; } else if (ch === '"') { inQ = true; } else cur += ch; }
+            }
+            res.push(cur); return res;
+        }
+
+        // ---------- Global shortcuts ----------
+        function onGlobalKey(e) {
+            const isEditingCell = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("cell");
+
+            // Allow save even while typing
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+                e.preventDefault();
+                localStorage.setItem(SK, JSON.stringify(cards));
+                toast("Saved");
+                return;
+            }
+
+            // If focused inside a table cell, ignore all other global shortcuts so typing never stops
+            if (isEditingCell) return;
+
+            if (view === "edit") {
+                if (!e.metaKey && !e.ctrlKey) {
+                    if (e.key.toLowerCase() === "r") { startReview(); e.preventDefault(); return; }
+                    if (e.key.toLowerCase() === "e") { showEdit(); e.preventDefault(); return; }
+                }
+                return;
+            }
+
+            if (view === "review") {
+                if (e.key === "Escape") { showEdit(); return; }
+                const k = e.key.toLowerCase();
+                if (k === " " || k === "f") { e.preventDefault(); flipCard(); return; }
+                if (k === "j" || e.key === "ArrowRight") { e.preventDefault(); nextCard(); return; }
+                if (k === "k" || e.key === "ArrowLeft") { e.preventDefault(); prevCard(); return; }
+                if (k === "1") { setOrder("chronological"); return; }
+                if (k === "2" || k === "s") { setOrder(order === "random" ? "chronological" : "random"); return; }
+                if (k === "t") { setDirection("term-first"); return; }
+                if (k === "d") { setDirection("def-first"); return; }
+                if (k === "l") { e.preventDefault(); markLearned(); return; }
+                if (k === "e") { showEdit(); return; }
+                if (k === "r") { startReview(); return; }
+            }
+        }
+
+        // ---------- Helpers ----------
+        function toast(msg) {
+            toastEl.textContent = msg; toastEl.classList.add("show");
+            clearTimeout(toastEl._t);
+            toastEl._t = setTimeout(() => toastEl.classList.remove("show"), 1200);
+        }
+        function placeCaretEnd(el) {
+            const range = document.createRange(); range.selectNodeContents(el); range.collapse(false);
+            const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        }
+        function mulberry32(a) {
+            return function () { let t = a += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+        }
+        function refreshIcons() { if (window.lucide && lucide.createIcons) try { lucide.createIcons(); } catch (_) { } }
+
+        // Expose for buttons needing file input trigger
+        document.getElementById("btnImport").addEventListener("click", () => inputImport.click());
+    </script>
 </body>
+
 </html>
