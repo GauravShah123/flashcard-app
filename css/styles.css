@@ -120,6 +120,50 @@ header {
     background: color-mix(in oklab, #b91c1c 12%, transparent);
 }
 
+/* Top-right menu */
+.menu { position: relative; }
+
+.menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    display: none;
+    min-width: 160px;
+    padding: 4px 0;
+    z-index: 20;
+}
+
+.menu-dropdown.show { display: block; }
+
+.menu-item {
+    width: 100%;
+    border: none;
+    background: none;
+    color: var(--text);
+    padding: 8px 12px;
+    font-size: 14px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.menu-item:hover { background: var(--surface-2); }
+
+.menu-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+}
+
+.menu-item.danger { color: #b91c1c; }
+.menu-item.danger:hover { background: color-mix(in oklab, #b91c1c 6%, transparent); }
+
 .seg {
     display: inline-flex;
     border: 1px solid var(--border);
@@ -456,9 +500,8 @@ tbody{
   
       /* Header: keep only theme on mobile */
       #btnEdit, #btnReview { display: none; }
-      #btnTheme { padding: 8px; border-radius: 999px; }
-      #btnTheme span { display: none; }
-      #btnTheme .lucide { width: 20px; height: 20px; }
+      #btnMenu { padding: 8px; border-radius: 999px; }
+      #btnMenu .lucide { width: 20px; height: 20px; }
   
       /* Segmented controls full width */
       #review-view .toolbar { display: grid; grid-template-columns: 1fr; gap: 10px; }

@@ -33,6 +33,8 @@ const btnExport = document.getElementById("btnExport");
 const btnImport = document.getElementById("btnImport");
 const inputImport = document.getElementById("importFile");
 const btnClear = document.getElementById("btnClear");
+const btnMenu = document.getElementById("btnMenu");
+const menu = document.getElementById("menu");
 
 const btnChrono = document.getElementById("btnChrono");
 const btnRandom = document.getElementById("btnRandom");
@@ -53,12 +55,15 @@ renderView();
 // Event wiring
 btnEdit.onclick = () => showEdit();
 btnReview.onclick = () => startReview();
-btnTheme.onclick = () => toggleTheme();
+btnTheme.onclick = () => { toggleTheme(); menu.classList.remove("show"); };
 
-btnExport.onclick = () => exportCSV();
-btnImport.onclick = () => inputImport.click();
+btnExport.onclick = () => { exportCSV(); menu.classList.remove("show"); };
+btnImport.onclick = () => { inputImport.click(); menu.classList.remove("show"); };
 inputImport.onchange = (e) => importCSV(e);
-btnClear.onclick = () => clearAll();
+btnClear.onclick = () => { clearAll(); menu.classList.remove("show"); };
+
+btnMenu.onclick = (e) => { e.stopPropagation(); menu.classList.toggle("show"); };
+document.addEventListener("click", () => menu.classList.remove("show"));
 
 btnChrono.onclick = () => setOrder("chronological");
 btnRandom.onclick = () => setOrder("random");
@@ -285,8 +290,8 @@ function setTheme(mode) {
 function toggleTheme() { setTheme(dark ? "light" : "dark"); }
 function updateThemeButton() {
     btnTheme.innerHTML = dark
-        ? '<i data-lucide="sun"></i><span>Light</span>'
-        : '<i data-lucide="moon"></i><span>Dark</span>';
+        ? '<i data-lucide="sun"></i><span>Light Mode</span>'
+        : '<i data-lucide="moon"></i><span>Dark Mode</span>';
 }
 
 // ---------- CSV ----------
@@ -388,7 +393,4 @@ function mulberry32(a) {
     return function () { let t = a += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }
 }
 function refreshIcons() { if (window.lucide && lucide.createIcons) try { lucide.createIcons(); } catch (_) { } }
-
-// Expose for buttons needing file input trigger
-document.getElementById("btnImport").addEventListener("click", () => inputImport.click());
     
