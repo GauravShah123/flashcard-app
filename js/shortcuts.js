@@ -12,6 +12,8 @@
         global: [
             { id: 'help', title: 'Open shortcuts menu', combos: [[isMac ? 'Cmd' : 'Ctrl', 'Shift', '/']], track: true },
             { id: 'save', title: 'Save', combos: [[isMac ? 'Cmd' : 'Ctrl', 'S']], track: true },
+            { id: 'undo', title: 'Undo', combos: [[isMac ? 'Cmd' : 'Ctrl', 'Z']], track: false },
+            { id: 'redo', title: 'Redo', combos: [[isMac ? 'Cmd' : 'Ctrl', 'Y'], [isMac ? 'Cmd' : 'Ctrl', 'Shift', 'Z']], track: false },
             { id: 'edit', title: 'Go to Edit view', combos: [['E']], track: true },
             { id: 'review', title: 'Start or restart review', combos: [['R']], track: true },
         ],

@@ -16,6 +16,57 @@ let learned = new Set();
 let idx = 0;
 let flipped = false;
 
+// History for undo/redo
+const undoStack = [];
+const redoStack = [];
+const MAX_HISTORY = 100;
+
+function cloneCards(src) { return src.map(c => ({ term: c.term, def: c.def })); }
+function getState() {
+    return { cards: cloneCards(cards), learned: Array.from(learned), idx, flipped, sessionSeed };
+}
+function applyState(s) {
+    let focusRow = null, focusCol = null;
+    if (view === "edit") {
+        const active = document.activeElement;
+        if (active && active.classList && active.classList.contains("cell")) {
+            const tr = active.parentElement;
+            focusRow = [...tbody.children].indexOf(tr);
+            focusCol = [...tr.children].indexOf(active);
+        }
+    }
+    cards = cloneCards(s.cards);
+    learned = new Set(s.learned);
+    sessionSeed = s.sessionSeed;
+    if (view === "review") buildOrderList();
+    idx = s.idx;
+    flipped = s.flipped;
+    renderView();
+    scheduleSave();
+    if (view === "edit" && focusRow !== null) {
+        const row = tbody.children[focusRow];
+        const cell = row && row.children[focusCol];
+        if (cell) { cell.focus(); placeCaretEnd(cell); }
+    }
+}
+function pushHistory() {
+    undoStack.push(getState());
+    if (undoStack.length > MAX_HISTORY) undoStack.shift();
+    redoStack.length = 0;
+}
+function undo() {
+    const prev = undoStack.pop();
+    if (!prev) return;
+    redoStack.push(getState());
+    applyState(prev);
+}
+function redo() {
+    const next = redoStack.pop();
+    if (!next) return;
+    undoStack.push(getState());
+    applyState(next);
+}
+
 // Elements
 const editView = document.getElementById("edit-view");
 const reviewView = document.getElementById("review-view");
@@ -158,6 +209,7 @@ function appendRow(term, def) {
 }
 function clearAll() {
     if (!confirm('Clear all cards?')) return;
+    pushHistory();
     cards = [];
     learned.clear();
     orderList = [];
@@ -169,6 +221,7 @@ function clearAll() {
     toast('Cleared');
 }
 function onTableInput() {
+    pushHistory();
     const rows = [...tbody.querySelectorAll("tr")];
     const next = [];
     for (const r of rows) {
@@ -277,7 +330,16 @@ function setDirection(newDir) {
     direction = newDir; savePrefs();
     if (view === "review") { flipped = false; renderReviewControls(); renderCard(); toast(direction === "term-first" ? "Term → Definition" : "Definition → Term"); }
 }
-function markLearned() { if (orderList.length === 0) return; const globalIndex = orderList[idx]; learned.add(globalIndex); buildOrderList(); flipped = false; idx = 0; renderCard(); }
+function markLearned() {
+    if (orderList.length === 0) return;
+    pushHistory();
+    const globalIndex = orderList[idx];
+    learned.add(globalIndex);
+    buildOrderList();
+    flipped = false;
+    idx = 0;
+    renderCard();
+}
 
 // ---------- Theme ----------
 function setTheme(mode) {
@@ -314,6 +376,7 @@ function importCSV(e) {
         const text = String(reader.result || "");
         const parsed = parseCSV(text);
         if (parsed.length === 0) { toast("Nothing to import"); return; }
+        pushHistory();
         cards = parsed; renderTable(); scheduleSave(); toast("Imported"); e.target.value = "";
     };
     reader.readAsText(file);
@@ -343,29 +406,35 @@ function splitCSVLine(line) {
 // ---------- Global shortcuts ----------
 function onGlobalKey(e) {
     const isEditingCell = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("cell");
+    const key = e.key ? e.key.toLowerCase() : "";
+    const ctrlOrMeta = e.ctrlKey || e.metaKey;
 
     // Allow save even while typing
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+    if (ctrlOrMeta && key === "s") {
         e.preventDefault();
         localStorage.setItem(SK, JSON.stringify(cards));
         toast("Saved");
         return;
     }
 
+    // Undo/redo work even while typing
+    if (ctrlOrMeta && key === "z" && !e.shiftKey) { e.preventDefault(); undo(); return; }
+    if (ctrlOrMeta && (key === "y" || (key === "z" && e.shiftKey))) { e.preventDefault(); redo(); return; }
+
     // If focused inside a table cell, ignore all other global shortcuts so typing never stops
     if (isEditingCell) return;
 
     if (view === "edit") {
         if (!e.metaKey && !e.ctrlKey) {
-            if (e.key.toLowerCase() === "r") { startReview(); e.preventDefault(); return; }
-            if (e.key.toLowerCase() === "e") { showEdit(); e.preventDefault(); return; }
+            if (key === "r") { startReview(); e.preventDefault(); return; }
+            if (key === "e") { showEdit(); e.preventDefault(); return; }
         }
         return;
     }
 
     if (view === "review") {
         if (e.key === "Escape") { showEdit(); return; }
-        const k = e.key.toLowerCase();
+        const k = key;
         if (k === " " || k === "f") { e.preventDefault(); flipCard(); return; }
         if (k === "j" || e.key === "ArrowRight") { e.preventDefault(); nextCard(); return; }
         if (k === "k" || e.key === "ArrowLeft") { e.preventDefault(); prevCard(); return; }
