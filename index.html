@@ -479,6 +479,65 @@
             }
         }
     </style>
+
+<style>
+    /* Hide bottom nav on desktop */
+    .bottom-nav { display: none; }
+  
+    @media (max-width: 640px) {
+      /* Give room for bottom nav */
+      main { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+  
+      /* Header: keep only theme on mobile */
+      #btnEdit, #btnReview { display: none; }
+      #btnTheme { padding: 8px; border-radius: 999px; }
+      #btnTheme span { display: none; }
+      #btnTheme .lucide { width: 20px; height: 20px; }
+  
+      /* Segmented controls full width */
+      #review-view .toolbar { display: grid; grid-template-columns: 1fr; gap: 10px; }
+      #review-view .toolbar .seg { width: 100%; display: flex; }
+      #review-view .toolbar .seg .btn { flex: 1; justify-content: center; }
+  
+      /* Hide helper text */
+      #review-view .tips,
+      #review-view .card small { display: none; }
+  
+      /* Bottom nav */
+      .bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        padding: 6px max(8px, env(safe-area-inset-left))
+                 calc(6px + env(safe-area-inset-bottom))
+                 max(8px, env(safe-area-inset-right));
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -2px 8px rgba(0,0,0,.06);
+        z-index: 30;
+      }
+      .bottom-nav .btn {
+        border-radius: 12px;
+        flex-direction: column;
+        gap: 4px;
+        justify-content: center;
+        font-size: 12px;
+        padding: 8px 4px;
+      }
+      .bottom-nav .btn .lucide { width: 18px; height: 18px; }
+    }
+  
+    /* Card flip animation */
+    .card.quickflip { animation: quickflip 160ms ease-in-out; }
+    @keyframes quickflip {
+      0%   { transform: rotateY(0deg) scale(1); }
+      50%  { transform: rotateY(90deg) scale(0.98); }
+      100% { transform: rotateY(0deg) scale(1); }
+    }
+  </style>
+  
 </head>
 
 <body>
@@ -596,6 +655,12 @@
             </div>
         </div>
     </div>
+
+    <nav class="bottom-nav" role="navigation" aria-label="Primary">
+        <button class="btn" id="mnuEdit"><i data-lucide="table"></i><span>Edit</span></button>
+        <button class="btn" id="mnuReview"><i data-lucide="play"></i><span>Review</span></button>
+      </nav>
+      
 
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -1152,6 +1217,53 @@
             }, false);
         })();
     </script>
+
+<script>
+    (function () {
+      const mEdit = document.getElementById('mnuEdit');
+      const mReview = document.getElementById('mnuReview');
+      const cardEl = document.getElementById('card');
+  
+      // Bottom nav actions
+      if (mEdit)   mEdit.addEventListener('click', () => { if (typeof showEdit === 'function') showEdit(); });
+      if (mReview) mReview.addEventListener('click', () => { if (typeof startReview === 'function') startReview(); });
+  
+      function updateBottomNavActive() {
+        if (!mEdit || !mReview || typeof view === 'undefined') return;
+        mEdit.classList.toggle('primary', view === 'edit');
+        mReview.classList.toggle('primary', view === 'review');
+      }
+  
+      // Patch renderView to refresh bottom nav highlight
+      if (typeof renderView === 'function') {
+        const _renderView = renderView;
+        window.renderView = function () { _renderView(); updateBottomNavActive(); };
+        // run once on load
+        updateBottomNavActive();
+      }
+  
+      // Flip animation: trigger, then flip content mid-way
+      function animateFlip() {
+        if (!cardEl) return;
+        cardEl.classList.remove('quickflip'); // reset
+        void cardEl.offsetWidth;              // reflow to restart animation
+        cardEl.classList.add('quickflip');
+      }
+  
+      if (typeof flipCard === 'function') {
+        const _flipCard = flipCard;
+        window.flipCard = function () {
+          animateFlip();
+          // Change content halfway through the animation
+          setTimeout(_flipCard, 80);
+        };
+      }
+  
+      // Render icons in new nav
+      if (window.lucide && lucide.createIcons) { try { lucide.createIcons(); } catch(_) {} }
+    })();
+  </script>
+  
 </body>
 
 </html>
