@@ -96,6 +96,10 @@ header {
     align-items: center;
 }
 
+.btn#btnMenu{
+    padding: 8px;
+}
+
 .btn:hover {
     background: var(--surface-2);
 }
