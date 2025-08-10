@@ -9,6 +9,7 @@
     <style>
         :root {
             --accent: #304FFE;
+            --accent-hover: #1838ea;
             --bg: #ffffff;
             --surface: #ffffff;
             --surface-2: #f6f7fb;
@@ -102,7 +103,7 @@
         }
 
         .btn.primary:hover {
-            filter: brightness(.98);
+            background: var(--accent-hover);
         }
 
         .btn.danger {
@@ -129,7 +130,7 @@
 
         .seg .btn.active {
             background: color-mix(in oklab, var(--muted)12%, transparent);
-            color: #fff;
+            color: var(--text);
         }
 
         /* Main */
@@ -281,6 +282,161 @@
             width: 16px;
             height: 16px;
         }
+
+        #btnDefFirst>span,
+        #btnTermFirst>span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    </style>
+
+    <!-- Shortcuts modal styles and last-row focus overrides -->
+    <style>
+        /* Keyboard Shortcuts Modal */
+        .kb-backdrop {
+            position: fixed;
+            inset: 0;
+            background: color-mix(in oklab, var(--text), transparent 70%);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .kb-backdrop.show {
+            display: flex;
+        }
+
+        .kb-modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: 16px;
+            max-width: 760px;
+            width: min(92vw, 760px);
+            max-height: min(90vh, 840px);
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .kb-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .kb-title {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .kb-section {
+            margin-top: 14px;
+        }
+
+        .kb-section h4 {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            margin-top: 32px;
+        }
+
+        /* Figma-like rows */
+        .kb-rows {
+            display: block;
+        }
+
+        .kb-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .kb-left {
+            font-size: 14px;
+        }
+
+        .kb-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .keycap {
+            display: inline-flex;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .sep {
+            opacity: .6;
+            padding: 0 3px;
+        }
+
+        .or {
+            font-size: 12px;
+            color: var(--muted);
+            padding: 0 4px;
+        }
+
+        .kb-right.done .keycap {
+            background: color-mix(in oklab, var(--accent) 20%, var(--surface));
+            border-color: color-mix(in oklab, var(--accent) 40%, transparent);
+        }
+
+        /* Last-row focus corners */
+        tbody tr:last-child td:first-child.cell:focus {
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 6px;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+
+        tbody tr:last-child td:last-child.cell:focus {
+            border-bottom-right-radius: 16px;
+            border-bottom-left-radius: 6px;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        .confetti i {
+            position: absolute;
+            width: 6px;
+            height: 10px;
+            opacity: .9;
+            transform: translateY(-20px);
+            animation: fall 1200ms ease-out forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 
@@ -348,10 +504,10 @@
                             data-lucide="shuffle"></i><span>Random</span></button>
                 </div>
                 <div class="seg" aria-label="Direction">
-                    <button class="btn" id="btnTermFirst" title="Term → Definition (T)"><i
-                            data-lucide="arrow-right"></i><span>Term → Def</span></button>
-                    <button class="btn" id="btnDefFirst" title="Definition → Term (D)"><i
-                            data-lucide="arrow-left"></i><span>Def → Term</span></button>
+                    <button class="btn" id="btnTermFirst" title="Term → Definition (T)"><span>Term <i
+                                data-lucide="arrow-left"></i> Def</span></button>
+                    <button class="btn" id="btnDefFirst" title="Definition → Term (D)"><span>Def <i
+                                data-lucide="arrow-right"></i> Term</span></button>
                 </div>
                 <div style="flex:1"></div>
                 <div class="tips" style="margin: 0;">Space or F flips. J/K or arrows move. L marks learned. Esc exits.
@@ -378,6 +534,27 @@
     </main>
 
     <div class="toast" id="toast"></div>
+
+    <!-- Shortcuts modal -->
+    <div class="kb-backdrop" id="kbBackdrop" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="kb-modal" tabindex="-1" id="kbModal">
+            <div class="kb-header">
+                <div class="kb-title">Keyboard shortcuts</div>
+            </div>
+            <div class="kb-section">
+                <h4>Global</h4>
+                <div class="kb-rows" id="kbGlobal"></div>
+            </div>
+            <div class="kb-section">
+                <h4>Edit view</h4>
+                <div class="kb-rows" id="kbEdit"></div>
+            </div>
+            <div class="kb-section">
+                <h4>Review view</h4>
+                <div class="kb-rows" id="kbReview"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -482,9 +659,7 @@
                 if (typeof p.dark === "boolean") dark = p.dark;
             } catch { }
         }
-        function savePrefs() {
-            localStorage.setItem(PK, JSON.stringify({ order, direction, dark }));
-        }
+        function savePrefs() { localStorage.setItem(PK, JSON.stringify({ order, direction, dark })); }
 
         // ---------- View control ----------
         function renderView() {
@@ -778,6 +953,163 @@
 
         // Expose for buttons needing file input trigger
         document.getElementById("btnImport").addEventListener("click", () => inputImport.click());
+    </script>
+
+    <!-- Shortcuts modal logic and tracking -->
+    <script>
+        (function () {
+            const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+            const USED_KEY = 'fc-kb-used-v1';
+            const CELEB_KEY = 'fc-kb-celebrated-v1';
+            const BACKDROP = document.getElementById('kbBackdrop');
+            const MODAL = document.getElementById('kbModal');
+            const EL_GLOBAL = document.getElementById('kbGlobal');
+            const EL_EDIT = document.getElementById('kbEdit');
+            const EL_REVIEW = document.getElementById('kbReview');
+
+            const KB = {
+                global: [
+                    { id: 'help', title: 'Open shortcuts menu', combos: [[isMac ? 'Cmd' : 'Ctrl', 'Shift', '/']], track: true },
+                    { id: 'save', title: 'Save', combos: [[isMac ? 'Cmd' : 'Ctrl', 'S']], track: true },
+                    { id: 'edit', title: 'Go to Edit view', combos: [['E']], track: true },
+                    { id: 'review', title: 'Start or restart review', combos: [['R']], track: true },
+                ],
+                edit: [
+                    { id: 'clear', title: 'Clear current cell', combos: [[isMac ? 'Cmd' : 'Ctrl', 'Backspace']], track: false },
+                ],
+                review: [
+                    { id: 'flip', title: 'Flip', combos: [["Space"], ["F"]], track: true },
+                    { id: 'next', title: 'Next card', combos: [["J"], ["→"]], track: true },
+                    { id: 'prev', title: 'Previous card', combos: [["K"], ["←"]], track: true },
+                    { id: 'learned', title: 'Mark learned', combos: [["L"]], track: true },
+                    { id: 'chrono', title: 'Chronological order', combos: [["1"]], track: true },
+                    { id: 'random', title: 'Toggle random', combos: [["2"], ["S"]], track: true },
+                    { id: 'termfirst', title: 'Term first', combos: [["T"]], track: true },
+                    { id: 'deffirst', title: 'Definition first', combos: [["D"]], track: true },
+                ]
+            };
+            const TRACKED = [...KB.global, ...KB.review].filter(x => x.track).map(x => x.id);
+
+            let used = {};
+            try { used = JSON.parse(localStorage.getItem(USED_KEY) || '{}'); } catch { used = {}; }
+            let celebrated = localStorage.getItem(CELEB_KEY) === '1';
+            let open = false;
+
+            function saveUsed() { localStorage.setItem(USED_KEY, JSON.stringify(used)); }
+
+            function markUsed(id) {
+                if (!id) return;
+                if (!used[id]) {
+                    used[id] = true;
+                    saveUsed();
+                    render();
+                    checkWin();
+                }
+            }
+
+            function escapeHtml(s) { return s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+            function comboHTML(keys) { return keys.map(k => `<span class="keycap">${escapeHtml(k)}</span>`).join(' '); }
+            function combosHTML(list) { return list.map((keys, i) => comboHTML(keys)).join('<span class="or">or</span>'); }
+            function rowHTML(item) {
+                const done = !!used[item.id];
+                return `<div class="kb-row"><div class="kb-left">${item.title}</div><div class="kb-right ${done ? 'done' : ''}">${combosHTML(item.combos)}</div></div>`;
+            }
+
+            function render() {
+                EL_GLOBAL.innerHTML = KB.global.map(rowHTML).join('');
+                EL_EDIT.innerHTML = KB.edit.map(rowHTML).join('');
+                EL_REVIEW.innerHTML = KB.review.map(rowHTML).join('');
+            }
+
+            function openModal() {
+                open = true;
+                BACKDROP.classList.add('show');
+                BACKDROP.setAttribute('aria-hidden', 'false');
+                MODAL.focus();
+            }
+            function closeModal() {
+                open = false;
+                BACKDROP.classList.remove('show');
+                BACKDROP.setAttribute('aria-hidden', 'true');
+            }
+
+            // Click outside to close
+            BACKDROP.addEventListener('click', function (e) { if (e.target === BACKDROP) closeModal(); });
+
+            function checkWin() {
+                const total = TRACKED.length;
+                const count = TRACKED.filter(k => used[k]).length;
+                if (count === total && !celebrated) {
+                    celebrated = true;
+                    localStorage.setItem(CELEB_KEY, '1');
+                    confetti();
+                }
+            }
+
+            function confetti() {
+                const layer = document.createElement('div');
+                layer.className = 'confetti';
+                document.body.appendChild(layer);
+                const n = 60;
+                for (let i = 0; i < n; i++) {
+                    const el = document.createElement('i');
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.style.top = '-10px';
+                    el.style.background = `hsl(${Math.floor(Math.random() * 360)},80%,60%)`;
+                    el.style.transform = `translateY(-20px) rotate(${Math.random() * 180}deg)`;
+                    el.style.animationDelay = Math.random() * 0.3 + 's';
+                    layer.appendChild(el);
+                }
+                setTimeout(() => { layer.remove(); }, 1400);
+            }
+
+            // Initial render
+            render();
+
+            function isEditingCell() {
+                const a = document.activeElement; return !!(a && a.classList && a.classList.contains('cell'));
+            }
+
+            // Capture keydown first to handle modal open or close cleanly
+            document.addEventListener('keydown', function (e) {
+                const ctrlOrMeta = e.ctrlKey || e.metaKey;
+                const helpCombo = ctrlOrMeta && e.shiftKey && (e.key === '?' || e.key === '/');
+                if (open) {
+                    if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeModal(); return; }
+                    if (helpCombo) { e.preventDefault(); e.stopImmediatePropagation(); closeModal(); return; }
+                } else {
+                    if (helpCombo) { e.preventDefault(); e.stopImmediatePropagation(); openModal(); markUsed('help'); return; }
+                }
+            }, true);
+
+            // Track usage without changing existing handlers
+            document.addEventListener('keydown', function (e) {
+                if (isEditingCell()) {
+                    const ctrlOrMeta = e.ctrlKey || e.metaKey;
+                    if (ctrlOrMeta && e.key && e.key.toLowerCase() === 's') { markUsed('save'); }
+                    return;
+                }
+                if (open) return; // don't count usage while menu is open
+                const k = e.key; const lower = k ? k.toLowerCase() : ''; const ctrlOrMeta = e.ctrlKey || e.metaKey;
+
+                // Global
+                if (ctrlOrMeta && lower === 's') { markUsed('save'); }
+                if (!ctrlOrMeta && lower === 'e') { markUsed('edit'); }
+                if (!ctrlOrMeta && lower === 'r') { markUsed('review'); }
+
+                // Review-only
+                if (typeof view !== 'undefined' && view === 'review') {
+                    if (lower === ' ' || lower === 'f') { markUsed('flip'); }
+                    if (lower === 'j' || k === 'ArrowRight') { markUsed('next'); }
+                    if (lower === 'k' || k === 'ArrowLeft') { markUsed('prev'); }
+                    if (lower === 'l') { markUsed('learned'); }
+                    if (lower === '1') { markUsed('chrono'); }
+                    if (lower === '2' || lower === 's') { markUsed('random'); }
+                    if (lower === 't') { markUsed('termfirst'); }
+                    if (lower === 'd') { markUsed('deffirst'); }
+                }
+            }, false);
+        })();
     </script>
 </body>
 
