@@ -50,29 +50,27 @@
                             data-lucide="table"></i><span>Edit</span></button>
                     <button class="btn" id="btnReview" title="Review (R)"><i
                             data-lucide="play"></i><span>Review</span></button>
-                    <button class="btn" id="btnTheme" title="Toggle light/dark"><i
-                            data-lucide="moon"></i><span>Dark</span></button>
+                    <div class="menu" id="menuWrap">
+                        <button class="btn" id="btnMenu" title="Menu"><i data-lucide="ellipsis-vertical"></i></button>
+                        <div class="menu-dropdown" id="menu">
+                            <button class="menu-item" id="btnTheme"><i data-lucide="moon"></i><span>Dark Mode</span></button>
+                            <div class="menu-divider"></div>
+                            <button class="menu-item" id="btnExport"><i data-lucide="arrow-up-to-line"></i><span>Export</span></button>
+                            <button class="menu-item" id="btnImport"><i data-lucide="arrow-down-to-line"></i><span>Import</span></button>
+                            <div class="menu-divider"></div>
+                            <button class="menu-item danger" id="btnClear"><i data-lucide="trash-2"></i><span>Delete All</span></button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
+    <input type="file" id="importFile" accept=".csv,text/csv" />
+
     <main>
         <!-- Edit view -->
         <section id="edit-view">
-            <div class="toolbar">
-                <button class="btn primary" id="btnExport" title="Export CSV"><i
-                        data-lucide="arrow-up-to-line"></i><span>Export</span></button>
-                <label for="importFile">
-                    <button class="btn" id="btnImport" title="Import CSV"><i
-                            data-lucide="arrow-down-to-line"></i><span>Import</span></button>
-                </label>
-                <input type="file" id="importFile" accept=".csv,text/csv" />
-                <div style="flex:1"></div>
-                <button class="btn danger" id="btnClear" title="Clear all cards"><i
-                        data-lucide="trash-2"></i><span>Clear</span></button>
-            </div>
-
             <div class="table-wrap">
                 <table id="card-table" aria-label="Flashcards table editor">
                     <colgroup>
