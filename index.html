@@ -42,6 +42,8 @@
         :root {
             --accent: #006C7D;
             --accent-hover: #004D59;
+            --accent-2: #E3F9FC;
+            --accent-2-hover: #ADEDF7;
             --bg: #ffffff;
             --surface: #ffffff;
             --surface-2: #f6f7fb;
@@ -53,6 +55,8 @@
         }
 
         body[data-theme="dark"] {
+            --accent-2: #003942;
+            --accent-2-hover: #002E36;
             --bg: #0a0a0a;
             --surface: #0f0f10;
             --surface-2: #111214;
@@ -436,8 +440,8 @@
         }
 
         .kb-right.done .keycap {
-            background: #E3F9FC;
-            border-color: #ADEDF7;
+            background: var(--accent-2);
+            border-color: var(--accent-2-hover);
         }
 
         /* Last-row focus corners */
