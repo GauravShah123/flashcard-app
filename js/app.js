@@ -63,11 +63,8 @@ function pushHistory(roundToWord = false) {
             const colIndex = [...tr.children].indexOf(active);
             const key = colIndex === 0 ? "term" : "def";
             if (rowIndex >= 0 && rowIndex < state.cards.length) {
-                const domText = active.textContent;
-                const trimmed = /[\s.,!?;:]$/.test(domText)
-                    ? domText.trim()
-                    : domText.replace(/\s+\S*$/, "").trim();
-                state.cards[rowIndex][key] = trimmed;
+                const html = cellHTML(active);
+                state.cards[rowIndex][key] = html;
             }
         }
     }
@@ -238,8 +235,8 @@ function appendRow(term, def) {
     tdDef.className = "cell";
     tdTerm.contentEditable = "true";
     tdDef.contentEditable = "true";
-    tdTerm.textContent = term;
-    tdDef.textContent = def;
+    tdTerm.innerHTML = term;
+    tdDef.innerHTML = def;
 
     const handle = document.createElement("button");
     handle.type = "button";
@@ -268,6 +265,13 @@ function refreshRowHandles() {
         handle.draggable = !isBlank;
     });
 }
+
+function cellHTML(td) {
+    const clone = td.cloneNode(true);
+    const handle = clone.querySelector(".drag-handle");
+    if (handle) handle.remove();
+    return clone.innerHTML.trim();
+}
 function clearAll() {
     pushHistory();
     cards = [];
@@ -284,9 +288,13 @@ function onTableInput() {
     const rows = [...tbody.querySelectorAll("tr")];
     const next = [];
     for (const r of rows) {
-        const term = r.children[0].textContent.trim();
-        const def = r.children[1].textContent.trim();
-        if (term || def) next.push({ term, def });
+        const termCell = r.children[0];
+        const defCell = r.children[1];
+        const termHTML = cellHTML(termCell);
+        const defHTML = cellHTML(defCell);
+        const termText = termCell.textContent.trim();
+        const defText = defCell.textContent.trim();
+        if (termText || defText) next.push({ term: termHTML, def: defHTML });
     }
     cards = next;
     const last = rows[rows.length - 1];
@@ -402,9 +410,13 @@ function updateCardsFromDOM() {
     const rows = [...tbody.querySelectorAll("tr:not(.drop-line)")];
     const next = [];
     for (const r of rows) {
-        const term = r.children[0].textContent.trim();
-        const def = r.children[1].textContent.trim();
-        if (term || def) next.push({ term, def });
+        const termCell = r.children[0];
+        const defCell = r.children[1];
+        const termHTML = cellHTML(termCell);
+        const defHTML = cellHTML(defCell);
+        const termText = termCell.textContent.trim();
+        const defText = defCell.textContent.trim();
+        if (termText || defText) next.push({ term: termHTML, def: defHTML });
     }
     cards = next;
     renderTable();
@@ -442,7 +454,7 @@ function renderCard() {
     const c = cards[globalIndex];
     const front = direction === "term-first" ? c.term : c.def;
     const back = direction === "term-first" ? c.def : c.term;
-    cardText.textContent = flipped ? (back || "(empty)") : (front || "(empty)");
+    cardText.innerHTML = flipped ? (back || "(empty)") : (front || "(empty)");
     progress.textContent = `${Math.min(idx + 1, orderList.length)} of ${orderList.length}`;
 }
 function nextCard() { if (orderList.length === 0) return; flipped = false; idx = (idx + 1) % orderList.length; renderCard(); }
