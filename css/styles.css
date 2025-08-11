@@ -379,7 +379,6 @@ tbody tr:last-child td {
     width: min(92vw, 760px);
     max-height: min(90vh, 600px);
     overflow: hidden;
-    padding: 20px;
     display: flex;
     flex-direction: column;
 }
@@ -389,7 +388,7 @@ tbody tr:last-child td {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 4px;
+    margin-bottom: 20px;
 }
 
 .kb-title {
@@ -399,9 +398,10 @@ tbody tr:last-child td {
 
 .kb-content {
     overflow: auto;
-    display: grid;
+    padding: 24px;
+    /* display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 24px;
+    gap: 24px; */
 }
 
 .kb-section {
@@ -409,10 +409,10 @@ tbody tr:last-child td {
 }
 
 .kb-section h4 {
-    font-size: 13px;
-    color: var(--muted);
+    font-size: 14px;
+    color: var(--text);
     margin-bottom: 8px;
-    margin-top: 0;
+    margin-top: 24px;
 }
 
 /* Figma-like rows */
@@ -425,7 +425,7 @@ tbody tr:last-child td {
     grid-template-columns: 1fr auto;
     gap: 12px;
     align-items: center;
-    padding: 6px 0;
+    padding: 4px 0;
 }
 
 .kb-left {
