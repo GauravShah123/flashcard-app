@@ -77,7 +77,7 @@ header {
     gap: 8px;
 }
 
-.title img{
+.title img {
     width: 22px;
     height: 20px;
 }
@@ -96,7 +96,7 @@ header {
     align-items: center;
 }
 
-.btn#btnMenu{
+.btn#btnMenu {
     padding: 8px;
 }
 
@@ -125,7 +125,9 @@ header {
 }
 
 /* Top-right menu */
-.menu { position: relative; }
+.menu {
+    position: relative;
+}
 
 .menu-dropdown {
     position: absolute;
@@ -142,7 +144,9 @@ header {
     z-index: 20;
 }
 
-.menu-dropdown.show { display: block; }
+.menu-dropdown.show {
+    display: block;
+}
 
 .menu-item {
     width: 100%;
@@ -157,7 +161,9 @@ header {
     cursor: pointer;
 }
 
-.menu-item:hover { background: var(--surface-2); }
+.menu-item:hover {
+    background: var(--surface-2);
+}
 
 .menu-divider {
     height: 1px;
@@ -165,8 +171,13 @@ header {
     margin: 4px 0;
 }
 
-.menu-item.danger { color: #b91c1c; }
-.menu-item.danger:hover { background: color-mix(in oklab, #b91c1c 6%, transparent); }
+.menu-item.danger {
+    color: #b91c1c;
+}
+
+.menu-item.danger:hover {
+    background: color-mix(in oklab, #b91c1c 6%, transparent);
+}
 
 .seg {
     display: inline-flex;
@@ -260,6 +271,7 @@ tbody tr:last-child td {
     overflow-wrap: anywhere;
     position: relative;
 }
+
 .drag-handle {
     position: absolute;
     left: -24px;
@@ -273,8 +285,15 @@ tbody tr:last-child td {
     width: 16px;
     height: 16px;
 }
-tbody tr:hover .drag-handle { opacity: 1; }
-.drag-handle:active { cursor: grabbing; }
+
+tbody tr:hover .drag-handle {
+    opacity: 1;
+    display: none;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
 
 tbody tr.dragging {
     opacity: 0.6;
@@ -378,7 +397,7 @@ tbody tr.dragging {
     align-items: center;
     gap: 4px;
 }
-    
+
 
 
 /* Keyboard Shortcuts Modal */
@@ -535,66 +554,112 @@ tbody tr:last-child td:last-child.cell:focus {
     }
 }
 
-tbody{
+tbody {
     font-size: 14px;
 }
-    
 
 
-    /* Hide bottom nav on desktop */
-    .bottom-nav { display: none; }
-  
-    @media (max-width: 640px) {
-      /* Give room for bottom nav */
-      main { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
-  
-      /* Header: keep only theme on mobile */
-      #btnEdit, #btnReview { display: none; }
-      #btnMenu { padding: 8px; border-radius: 999px; }
-      #btnMenu .lucide { width: 20px; height: 20px; }
-  
-      /* Segmented controls full width */
-      #review-view .toolbar { display: grid; grid-template-columns: 1fr; gap: 10px; }
-      #review-view .toolbar .seg { width: 100%; display: flex; }
-      #review-view .toolbar .seg .btn { flex: 1; justify-content: center; }
-  
-      /* Hide helper text */
-      #review-view .tips,
-      #review-view .card small { display: none; }
-  
-      /* Bottom nav */
-      .bottom-nav {
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: 8px;
-position: fixed;
-left: 0; right: 0; bottom: 0;
-padding: 6px max(8px, env(safe-area-inset-left))
-         calc(6px + env(safe-area-inset-bottom))
-         max(8px, env(safe-area-inset-right));
-background: var(--surface);
-border-top: 1px solid var(--border);
-box-shadow: 0 -2px 8px rgba(0,0,0,.06);
-z-index: 30;
-      }
-      .bottom-nav .btn {
-border-radius: 12px;
-gap: 8px;
-justify-content: center;
-font-size: 16px;
-padding: 12px 12px;
-      }
-      .bottom-nav .btn .lucide { width: 18px; height: 18px; }
 
-      .toast {bottom: 72px}
+/* Hide bottom nav on desktop */
+.bottom-nav {
+    display: none;
+}
+
+@media (max-width: 640px) {
+
+    /* Give room for bottom nav */
+    main {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
     }
-  
-    /* Card flip animation */
-    .card.quickflip { animation: quickflip 160ms ease-in-out; }
-    @keyframes quickflip {
-      0%   { transform: rotateY(0deg) scale(1); }
-      50%  { transform: rotateY(90deg) scale(0.98); }
-      100% { transform: rotateY(0deg) scale(1); }
-    }
-  
 
+    /* Header: keep only theme on mobile */
+    #btnEdit,
+    #btnReview {
+        display: none;
+    }
+
+    #btnMenu {
+        padding: 8px;
+        border-radius: 999px;
+    }
+
+    #btnMenu .lucide {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Segmented controls full width */
+    #review-view .toolbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    #review-view .toolbar .seg {
+        width: 100%;
+        display: flex;
+    }
+
+    #review-view .toolbar .seg .btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    /* Hide helper text */
+    #review-view .tips,
+    #review-view .card small {
+        display: none;
+    }
+
+    /* Bottom nav */
+    .bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right));
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, .06);
+        z-index: 30;
+    }
+
+    .bottom-nav .btn {
+        border-radius: 12px;
+        gap: 8px;
+        justify-content: center;
+        font-size: 16px;
+        padding: 12px 12px;
+    }
+
+    .bottom-nav .btn .lucide {
+        width: 18px;
+        height: 18px;
+    }
+
+    .toast {
+        bottom: 72px
+    }
+}
+
+/* Card flip animation */
+.card.quickflip {
+    animation: quickflip 160ms ease-in-out;
+}
+
+@keyframes quickflip {
+    0% {
+        transform: rotateY(0deg) scale(1);
+    }
+
+    50% {
+        transform: rotateY(90deg) scale(0.98);
+    }
+
+    100% {
+        transform: rotateY(0deg) scale(1);
+    }
+}
