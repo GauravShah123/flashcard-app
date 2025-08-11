@@ -180,6 +180,16 @@ header {
     border-radius: 0;
 }
 
+.seg .btn:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.seg .btn:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
 .seg .btn.active {
     background: color-mix(in oklab, var(--muted)12%, transparent);
     color: var(--text);
@@ -367,9 +377,11 @@ tbody tr:last-child td {
     border-radius: 16px;
     max-width: 760px;
     width: min(92vw, 760px);
-    max-height: min(90vh, 840px);
-    overflow: auto;
+    max-height: min(90vh, 600px);
+    overflow: hidden;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .kb-header {
@@ -385,15 +397,22 @@ tbody tr:last-child td {
     font-size: 18px;
 }
 
+.kb-content {
+    overflow: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+}
+
 .kb-section {
-    margin-top: 14px;
+    margin-top: 0;
 }
 
 .kb-section h4 {
     font-size: 13px;
     color: var(--muted);
     margin-bottom: 8px;
-    margin-top: 32px;
+    margin-top: 0;
 }
 
 /* Figma-like rows */
