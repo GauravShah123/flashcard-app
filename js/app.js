@@ -451,7 +451,7 @@ function onGlobalKey(e) {
 
     if (view === "edit") {
         if (!e.metaKey && !e.ctrlKey) {
-            if (key === "r") { startReview(); e.preventDefault(); return; }
+            if (key === "r") { startReview(); toast("Restarted review"); e.preventDefault(); return; }
             if (key === "e") { showEdit(); e.preventDefault(); return; }
         }
         return;
@@ -469,7 +469,7 @@ function onGlobalKey(e) {
         if (k === "d") { setDirection("def-first"); return; }
         if (k === "l") { e.preventDefault(); markLearned(); return; }
         if (k === "e") { showEdit(); return; }
-        if (k === "r") { startReview(); return; }
+        if (k === "r") { startReview(); toast("Restarted review"); return; }
     }
 }
 
