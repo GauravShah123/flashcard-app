@@ -136,13 +136,23 @@
 
     <div class="toast" id="toast"></div>
 
+    <!-- Clear all confirmation -->
+    <dialog id="clearDialog">
+        <p>Delete all cards?</p>
+        <div style="display:flex; gap:8px; justify-content:flex-end;">
+            <button class="btn danger" id="confirmDelete">Delete All</button>
+            <button class="btn" id="cancelDelete">Cancel</button>
+        </div>
+    </dialog>
+
     <!-- Shortcuts modal -->
     <div class="kb-backdrop" id="kbBackdrop" aria-hidden="true" role="dialog" aria-modal="true">
         <div class="kb-modal" tabindex="-1" id="kbModal">
-            <div class="kb-header">
-                <div class="kb-title">Keyboard shortcuts</div>
-            </div>
+
             <div class="kb-content">
+                <div class="kb-header">
+                    <div class="kb-title">Keyboard shortcuts</div>
+                </div>
                 <div class="kb-section">
                     <h4>Global</h4>
                     <div class="kb-rows" id="kbGlobal"></div>

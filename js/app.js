@@ -115,6 +115,9 @@ const inputImport = document.getElementById("importFile");
 const btnClear = document.getElementById("btnClear");
 const btnMenu = document.getElementById("btnMenu");
 const menu = document.getElementById("menu");
+const clearDialog = document.getElementById("clearDialog");
+const btnDeleteAll = document.getElementById("confirmDelete");
+const btnCancelDelete = document.getElementById("cancelDelete");
 
 const btnChrono = document.getElementById("btnChrono");
 const btnRandom = document.getElementById("btnRandom");
@@ -140,7 +143,9 @@ btnTheme.onclick = () => { toggleTheme(); menu.classList.remove("show"); };
 btnExport.onclick = () => { exportCSV(); menu.classList.remove("show"); };
 btnImport.onclick = () => { inputImport.click(); menu.classList.remove("show"); };
 inputImport.onchange = (e) => importCSV(e);
-btnClear.onclick = () => { clearAll(); menu.classList.remove("show"); };
+btnClear.onclick = () => { clearDialog.showModal(); menu.classList.remove("show"); };
+btnDeleteAll.onclick = () => { clearAll(); clearDialog.close(); };
+btnCancelDelete.onclick = () => clearDialog.close();
 
 btnMenu.onclick = (e) => { e.stopPropagation(); menu.classList.toggle("show"); };
 document.addEventListener("click", () => menu.classList.remove("show"));
@@ -246,7 +251,6 @@ function appendRow(term, def) {
     handle.addEventListener("dragstart", (e) => onDragStart(e, tr));
     handle.addEventListener("dragend", onDragEnd);
     tdTerm.appendChild(handle);
-
     tr.appendChild(tdTerm);
     tr.appendChild(tdDef);
     tbody.appendChild(tr);
@@ -265,7 +269,6 @@ function refreshRowHandles() {
     });
 }
 function clearAll() {
-    if (!confirm('Clear all cards?')) return;
     pushHistory();
     cards = [];
     learned.clear();
@@ -528,6 +531,7 @@ function splitCSVLine(line) {
 
 // ---------- Global shortcuts ----------
 function onGlobalKey(e) {
+    if (clearDialog.open) return;
     const isEditingCell = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("cell");
     const key = e.key ? e.key.toLowerCase() : "";
     const ctrlOrMeta = e.ctrlKey || e.metaKey;
