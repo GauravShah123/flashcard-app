@@ -214,7 +214,7 @@ main {
 .table-wrap {
     border: 1px solid var(--border);
     border-radius: 16px;
-    overflow: hidden;
+    overflow: visible;
     background: var(--surface);
     box-shadow: var(--shadow);
 }
@@ -258,6 +258,34 @@ tbody tr:last-child td {
     outline: none;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+    position: relative;
+}
+
+.drag-handle {
+    position: absolute;
+    left: -24px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    cursor: grab;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+}
+tbody tr:hover .drag-handle { opacity: 1; }
+.drag-handle:active { cursor: grabbing; }
+
+tbody tr.dragging {
+    opacity: 0.6;
+    transform: rotate(5deg);
+}
+
+.drop-line td {
+    padding: 0;
+    height: 2px;
+    background: #3b82f6;
 }
 
 .cell:focus {

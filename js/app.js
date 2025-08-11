@@ -17,8 +17,10 @@ let idx = 0;
 let flipped = false;
 
 // History for undo/redo
-const undoStack = [];
-const redoStack = [];
+const undoStackEdit = [];
+const redoStackEdit = [];
+const undoStackReview = [];
+const redoStackReview = [];
 const MAX_HISTORY = 100;
 let lastHistoryPush = 0;
 let typedSinceLastPush = false;
@@ -69,22 +71,28 @@ function pushHistory(roundToWord = false) {
             }
         }
     }
-    undoStack.push(state);
-    if (undoStack.length > MAX_HISTORY) undoStack.shift();
-    redoStack.length = 0;
+    const uStack = view === "edit" ? undoStackEdit : undoStackReview;
+    const rStack = view === "edit" ? redoStackEdit : redoStackReview;
+    uStack.push(state);
+    if (uStack.length > MAX_HISTORY) uStack.shift();
+    rStack.length = 0;
     lastHistoryPush = Date.now();
     typedSinceLastPush = false;
 }
 function undo() {
-    const prev = undoStack.pop();
+    const uStack = view === "edit" ? undoStackEdit : undoStackReview;
+    const rStack = view === "edit" ? redoStackEdit : redoStackReview;
+    const prev = uStack.pop();
     if (!prev) return;
-    redoStack.push(getState());
+    rStack.push(getState());
     applyState(prev);
 }
 function redo() {
-    const next = redoStack.pop();
+    const rStack = view === "edit" ? redoStackEdit : redoStackReview;
+    const uStack = view === "edit" ? undoStackEdit : undoStackReview;
+    const next = rStack.pop();
     if (!next) return;
-    undoStack.push(getState());
+    uStack.push(getState());
     applyState(next);
 }
 
@@ -152,6 +160,8 @@ cardEl.onclick = () => flipCard();
 // Delegated table events
 tbody.addEventListener("input", onTableInput);
 tbody.addEventListener("keydown", onTableKeydown);
+tbody.addEventListener("dragover", onDragOver);
+tbody.addEventListener("drop", onDrop);
 
 // Global keys
 document.addEventListener("keydown", onGlobalKey);
@@ -212,6 +222,7 @@ function renderTable() {
     tbody.innerHTML = "";
     for (const c of cards) appendRow(c.term, c.def);
     appendRow("", "");
+    refreshRowHandles();
     refreshIcons();
 }
 function appendRow(term, def) {
@@ -224,9 +235,34 @@ function appendRow(term, def) {
     tdDef.contentEditable = "true";
     tdTerm.textContent = term;
     tdDef.textContent = def;
+
+    const handle = document.createElement("button");
+    handle.type = "button";
+    handle.className = "drag-handle";
+    handle.draggable = true;
+    handle.tabIndex = -1;
+    handle.contentEditable = "false";
+    handle.innerHTML = '<i data-lucide="grip-vertical"></i>';
+    handle.addEventListener("dragstart", (e) => onDragStart(e, tr));
+    handle.addEventListener("dragend", onDragEnd);
+    tdTerm.appendChild(handle);
+
     tr.appendChild(tdTerm);
     tr.appendChild(tdDef);
     tbody.appendChild(tr);
+}
+
+function refreshRowHandles() {
+    const rows = [...tbody.querySelectorAll("tr")];
+    rows.forEach((r, i) => {
+        const handle = r.querySelector(".drag-handle");
+        if (!handle) return;
+        const term = r.children[0].textContent.trim();
+        const def = r.children[1].textContent.trim();
+        const isBlank = !term && !def && i === rows.length - 1;
+        handle.style.display = isBlank ? "none" : "";
+        handle.draggable = !isBlank;
+    });
 }
 function clearAll() {
     if (!confirm('Clear all cards?')) return;
@@ -254,6 +290,8 @@ function onTableInput() {
     const hasContent = !!(last?.children[0].textContent.trim() || last?.children[1].textContent.trim());
     if (hasContent) appendRow("", "");
     scheduleSave();
+    refreshRowHandles();
+    refreshIcons();
     const now = Date.now();
     if (!typedSinceLastPush || now - lastHistoryPush >= 5000) pushHistory(true);
     typedSinceLastPush = true;
@@ -310,6 +348,66 @@ function onTableKeydown(e) {
         }
     }
 }
+
+// Drag and drop reordering
+let draggedRow = null;
+const dropLine = document.createElement("tr");
+dropLine.className = "drop-line";
+dropLine.innerHTML = '<td colspan="2"></td>';
+
+function onDragStart(e, row) {
+    draggedRow = row;
+    draggedRow.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", "");
+    e.dataTransfer.setDragImage(row, 0, 0);
+}
+
+function onDragOver(e) {
+    if (!draggedRow) return;
+    e.preventDefault();
+    const target = e.target.closest("tr");
+    if (!target || target === draggedRow || target === dropLine) return;
+    const rect = target.getBoundingClientRect();
+    const before = e.clientY < rect.top + rect.height / 2;
+    tbody.insertBefore(dropLine, before ? target : target.nextSibling);
+}
+
+function onDrop(e) {
+    if (!draggedRow) return;
+    e.preventDefault();
+    const moved = !!dropLine.parentElement;
+    if (moved) {
+        tbody.insertBefore(draggedRow, dropLine);
+        dropLine.remove();
+    }
+    draggedRow.classList.remove("dragging");
+    draggedRow = null;
+    if (moved) {
+        updateCardsFromDOM();
+        pushHistory();
+    }
+}
+
+function onDragEnd() {
+    if (draggedRow) draggedRow.classList.remove("dragging");
+    dropLine.remove();
+    draggedRow = null;
+}
+
+function updateCardsFromDOM() {
+    const rows = [...tbody.querySelectorAll("tr:not(.drop-line)")];
+    const next = [];
+    for (const r of rows) {
+        const term = r.children[0].textContent.trim();
+        const def = r.children[1].textContent.trim();
+        if (term || def) next.push({ term, def });
+    }
+    cards = next;
+    renderTable();
+    scheduleSave();
+}
+
 
 // ---------- Review ----------
 function renderReviewControls() {
