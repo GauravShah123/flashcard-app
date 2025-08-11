@@ -214,7 +214,7 @@ main {
 .table-wrap {
     border: 1px solid var(--border);
     border-radius: 16px;
-    overflow: hidden;
+    overflow: visible;
     background: var(--surface);
     box-shadow: var(--shadow);
 }
@@ -260,12 +260,9 @@ tbody tr:last-child td {
     overflow-wrap: anywhere;
     position: relative;
 }
-
-tbody td:first-child.cell { padding-left: 32px; }
-
 .drag-handle {
     position: absolute;
-    left: 8px;
+    left: -24px;
     top: 50%;
     transform: translateY(-50%);
     opacity: 0;

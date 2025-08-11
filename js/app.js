@@ -240,11 +240,13 @@ function appendRow(term, def) {
     tdDef.contentEditable = "true";
     tdTerm.textContent = term;
     tdDef.textContent = def;
+
     const handle = document.createElement("button");
     handle.type = "button";
     handle.className = "drag-handle";
     handle.draggable = true;
     handle.tabIndex = -1;
+    handle.contentEditable = "false";
     handle.innerHTML = '<i data-lucide="grip-vertical"></i>';
     handle.addEventListener("dragstart", (e) => onDragStart(e, tr));
     handle.addEventListener("dragend", onDragEnd);
