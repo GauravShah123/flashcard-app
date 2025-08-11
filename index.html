@@ -53,9 +53,12 @@
                     <div class="menu" id="menuWrap">
                         <button class="btn" id="btnMenu" title="Menu"><i data-lucide="ellipsis-vertical"></i></button>
                         <div class="menu-dropdown" id="menu">
+                            <button class="menu-item" onclick="undo()"><i data-lucide="undo"></i><span>Undo</span></button>
+                            <button class="menu-item" onclick="redo()"><i data-lucide="redo"></i><span>Redo</span></button>
+                            <div class="menu-divider"></div>
                             <button class="menu-item" id="btnTheme"><i data-lucide="moon"></i><span>Dark Mode</span></button>
                             <div class="menu-divider"></div>
-                            <button class="menu-item" id="btnExport"><i data-lucide="arrow-up-to-line"></i><span>Export</span></button>
+                            <button class="menu-item" id="btnExport"><i data-lucide="arrow-up-from-line"></i><span>Export</span></button>
                             <button class="menu-item" id="btnImport"><i data-lucide="arrow-down-to-line"></i><span>Import</span></button>
                             <div class="menu-divider"></div>
                             <button class="menu-item danger" id="btnClear"><i data-lucide="trash-2"></i><span>Delete All</span></button>
