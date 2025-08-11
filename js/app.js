@@ -20,6 +20,8 @@ let flipped = false;
 const undoStack = [];
 const redoStack = [];
 const MAX_HISTORY = 100;
+let lastHistoryPush = 0;
+let typedSinceLastPush = false;
 
 function cloneCards(src) { return src.map(c => ({ term: c.term, def: c.def })); }
 function getState() {
@@ -49,10 +51,29 @@ function applyState(s) {
         if (cell) { cell.focus(); placeCaretEnd(cell); }
     }
 }
-function pushHistory() {
-    undoStack.push(getState());
+function pushHistory(roundToWord = false) {
+    let state = getState();
+    if (roundToWord && view === "edit") {
+        const active = document.activeElement;
+        if (active && active.classList && active.classList.contains("cell")) {
+            const tr = active.parentElement;
+            const rowIndex = [...tbody.children].indexOf(tr);
+            const colIndex = [...tr.children].indexOf(active);
+            const key = colIndex === 0 ? "term" : "def";
+            if (rowIndex >= 0 && rowIndex < state.cards.length) {
+                const domText = active.textContent;
+                const trimmed = /[\s.,!?;:]$/.test(domText)
+                    ? domText.trim()
+                    : domText.replace(/\s+\S*$/, "").trim();
+                state.cards[rowIndex][key] = trimmed;
+            }
+        }
+    }
+    undoStack.push(state);
     if (undoStack.length > MAX_HISTORY) undoStack.shift();
     redoStack.length = 0;
+    lastHistoryPush = Date.now();
+    typedSinceLastPush = false;
 }
 function undo() {
     const prev = undoStack.pop();
@@ -221,7 +242,6 @@ function clearAll() {
     toast('Cleared');
 }
 function onTableInput() {
-    pushHistory();
     const rows = [...tbody.querySelectorAll("tr")];
     const next = [];
     for (const r of rows) {
@@ -234,10 +254,15 @@ function onTableInput() {
     const hasContent = !!(last?.children[0].textContent.trim() || last?.children[1].textContent.trim());
     if (hasContent) appendRow("", "");
     scheduleSave();
+    const now = Date.now();
+    if (!typedSinceLastPush || now - lastHistoryPush >= 5000) pushHistory(true);
+    typedSinceLastPush = true;
 }
 function onTableKeydown(e) {
     const isCell = e.target && e.target.classList && e.target.classList.contains("cell");
     if (!isCell) return;
+
+    if (e.key === "Backspace" || e.key === "Delete") { pushHistory(); typedSinceLastPush = true; }
 
     const td = e.target;
     const tr = td.parentElement;
