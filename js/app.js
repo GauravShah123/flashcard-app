@@ -446,7 +446,7 @@ function buildOrderList() {
 }
 function renderCard() {
     if (orderList.length === 0) {
-        cardText.innerHTML = "All done. You marked everything as learned.";
+        cardText.textContent = "All done. You marked everything as learned. Press \"R\" to start over.";
         progress.textContent = "";
         return;
     }
