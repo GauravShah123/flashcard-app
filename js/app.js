@@ -165,8 +165,9 @@ cardEl.onclick = () => flipCard();
 // Delegated table events
 tbody.addEventListener("input", onTableInput);
 tbody.addEventListener("keydown", onTableKeydown);
-tbody.addEventListener("dragover", onDragOver);
-tbody.addEventListener("drop", onDrop);
+
+document.addEventListener("dragover", onDragOver);
+document.addEventListener("drop", onDrop);
 
 // Global keys
 document.addEventListener("keydown", onGlobalKey);
@@ -369,11 +370,20 @@ function onDragStart(e, row) {
 function onDragOver(e) {
     if (!draggedRow) return;
     e.preventDefault();
-    const target = e.target.closest("tr");
-    if (!target || target === draggedRow || target === dropLine) return;
-    const rect = target.getBoundingClientRect();
-    const before = e.clientY < rect.top + rect.height / 2;
-    tbody.insertBefore(dropLine, before ? target : target.nextSibling);
+    const rows = [...tbody.querySelectorAll("tr:not(.dragging):not(.drop-line)")];
+    let target = null;
+    for (const r of rows) {
+        const rect = r.getBoundingClientRect();
+        if (e.clientY < rect.top + rect.height / 2) {
+            target = r;
+            break;
+        }
+    }
+    if (target) {
+        tbody.insertBefore(dropLine, target);
+    } else {
+        tbody.appendChild(dropLine);
+    }
 }
 
 function onDrop(e) {
